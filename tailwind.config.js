@@ -24,7 +24,13 @@ export default {
   				'Fira Code',
   				'Consolas',
   				'monospace'
-  			]
+  			],
+        pixel: [
+          'JetBrains Mono',
+          'Fira Code',
+          'Consolas',
+          'monospace'
+        ]
   		},
   		fontSize: {
   			'2xs': [
@@ -91,6 +97,9 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+        'deep-purple': 'rgb(29, 7, 52)',
+        'neon-pink': 'rgb(255, 107, 237)',
+        'neon-cyan': 'rgb(107, 237, 255)',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			muted: {
@@ -147,9 +156,19 @@ export default {
   			glow: '0 0 20px -5px rgba(99, 102, 241, 0.4)',
   			'glow-lg': '0 0 40px -10px rgba(99, 102, 241, 0.3)',
   			primary: '0 0 20px -5px hsl(var(--primary) / 0.4)',
-  			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
+  			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        'neon-pink': '0 0 15px rgba(255, 107, 237, 0.6), 0 0 5px rgba(255, 107, 237, 1)',
+        'neon-cyan': '0 0 15px rgba(107, 237, 255, 0.6), 0 0 5px rgba(107, 237, 255, 1)',
   		},
   		keyframes: {
+        'neon-glow': {
+          '0%, 100%': { textShadow: '0 0 5px var(--tw-shadow-color), 0 0 10px var(--tw-shadow-color), 0 0 20px var(--tw-shadow-color)' },
+          '50%': { textShadow: '0 0 10px var(--tw-shadow-color), 0 0 20px var(--tw-shadow-color), 0 0 40px var(--tw-shadow-color)' },
+        },
+        'scanline': {
+          '0%': { transform: 'translateY(0)' },
+          '100%': { transform: 'translateY(100%)' },
+        },
   			'fade-in': {
   				'0%': {
   					opacity: '0',
@@ -222,6 +241,8 @@ export default {
   			}
   		},
   		animation: {
+        'neon-glow': 'neon-glow 2s ease-in-out infinite',
+        'scanline': 'scanline 10s linear infinite',
   			'fade-in': 'fade-in 0.6s ease-out',
   			'slide-up': 'slide-up 0.4s ease-out',
   			'scale-in': 'scale-in 0.3s ease-out',
