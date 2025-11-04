@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { LogOut, RefreshCw } from 'lucide-react';
 import { SpotifyLogin } from '@/components/SpotifyLogin';
 import { AlbumSelection } from '@/components/AlbumSelection';
+import { Toaster } from '@/components/ui/sonner';
 export function HomePage() {
   const appState = useSongStore((state) => state.appState);
   const isAuthenticated = useSongStore((state) => state.isAuthenticated);
@@ -15,6 +16,7 @@ export function HomePage() {
   const startNew = useSongStore((state) => state.startNew);
   const completedBattles = useSongStore((state) => state.completedBattles);
   const totalBattles = useSongStore((state) => state.totalBattles);
+  const selectedAlbum = useSongStore((state) => state.selectedAlbum);
   const progressValue = totalBattles > 0 ? (completedBattles / totalBattles) * 100 : 0;
   const renderHeaderContent = () => {
     switch (appState) {
@@ -25,7 +27,10 @@ export function HomePage() {
       case 'battle':
         return { title: "TuneTussle", subtitle: "Which track reigns supreme?" };
       case 'results':
-        return { title: "Final Rankings", subtitle: "The people have spoken!" };
+        return { 
+          title: "Final Rankings", 
+          subtitle: selectedAlbum ? `Results for ${selectedAlbum.title}` : "The people have spoken!" 
+        };
       default:
         return { title: "TuneTussle", subtitle: "" };
     }
@@ -57,6 +62,16 @@ export function HomePage() {
   };
   return (
     <div className="min-h-screen bg-deep-purple flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-pixel relative overflow-y-auto">
+      <Toaster 
+        theme="dark"
+        toastOptions={{
+          classNames: {
+            toast: 'bg-deep-purple border-neon-cyan/30 text-neon-cyan',
+            success: 'text-green-400',
+            error: 'text-red-400',
+          },
+        }}
+      />
       <div className="absolute inset-0 bg-grid-neon-cyan/10 [mask-image:linear-gradient(to_bottom,white_5%,transparent_80%)]"></div>
       <div className="w-full max-w-4xl mx-auto">
         <motion.div
@@ -67,7 +82,7 @@ export function HomePage() {
           <header className="text-center mb-8 relative h-28">
             <AnimatePresence mode="wait">
               <motion.div
-                key={title}
+                key={title + subtitle}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -123,7 +138,7 @@ export function HomePage() {
         </motion.div>
       </div>
       <footer className="w-full text-center text-neon-cyan/40 text-sm mt-12 pb-4">
-        <p>Built with ❤�� at Cloudflare</p>
+        <p>Built with ❤️ at Cloudflare</p>
       </footer>
     </div>
   );

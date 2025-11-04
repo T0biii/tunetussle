@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { getAlbumTracks, Track } from '@/lib/mockSpotifyData';
+import { getAlbumTracks, Track, Album, mockAlbums } from '@/lib/mockSpotifyData';
 export interface Song extends Track {
   score: number;
 }
@@ -13,6 +13,7 @@ interface SongState {
   totalBattles: number;
   isAuthenticated: boolean;
   appState: AppState;
+  selectedAlbum: Album | null;
   login: () => void;
   logout: () => void;
   selectAlbum: (albumId: string) => void;
@@ -63,6 +64,7 @@ const initialState = {
   totalBattles: 0,
   isAuthenticated: false,
   appState: 'login' as AppState,
+  selectedAlbum: null,
 };
 export const useSongStore = create<SongState>()(
   persist(
@@ -72,8 +74,9 @@ export const useSongStore = create<SongState>()(
       logout: () => set(initialState),
       selectAlbum: (albumId: string) => {
         const tracks = getAlbumTracks(albumId);
+        const album = mockAlbums.find(a => a.id === albumId) || null;
         get().initializeSession(tracks);
-        set({ appState: 'battle' });
+        set({ appState: 'battle', selectedAlbum: album });
       },
       initializeSession: (tracks: Track[]) => {
         const songsWithScore = tracks.map(track => ({ ...track, score: 1000 }));
@@ -102,7 +105,7 @@ export const useSongStore = create<SongState>()(
           }
           updatedSongs = songs.map(song => {
             if (song.id === songA.id) return { ...song, score: newRatings.newRatingA };
-            if (song.id === songB.id) return { ...song, score: newRatings.newRatingB };
+            if (song.id === B.id) return { ...song, score: newRatings.newRatingB };
             return song;
           }).sort((a, b) => b.score - a.score);
         }
@@ -124,6 +127,7 @@ export const useSongStore = create<SongState>()(
           currentBattle: null,
           completedBattles: 0,
           totalBattles: 0,
+          selectedAlbum: null,
         });
       },
     }),
