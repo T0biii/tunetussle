@@ -45,8 +45,8 @@ export function HomePage() {
         className="w-full max-w-4xl mx-auto"
       >
         <header className="text-center mb-8 md:mb-12">
-          <h1 
-            className="text-5xl md:text-7xl font-bold text-neon-pink animate-neon-glow"
+          <h1
+            className="text-5xl md:text-7xl font-bold text-neon-pink animate-neon-glow shadow-neon-pink"
             style={{ textShadow: '0 0 5px #ff6bed, 0 0 10px #ff6bed, 0 0 20px #ff6bed, 0 0 40px #ff6bed' }}
           >
             TuneTussle
