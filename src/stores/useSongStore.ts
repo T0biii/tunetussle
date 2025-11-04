@@ -1,27 +1,27 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getAlbumTracks, Track, Album, mockAlbums } from '@/lib/mockSpotifyData';
-export interface Song extends Track {
-  score: number;
+
+const B = {
+
+  _stub: true,
+
+
+  init: (...args: unknown[]): void => {
+    console.warn('B.init not implemented', args);
+  },
+
+  getValue: <T = unknown,>(key: string): T | undefined => {
+    console.warn('B.getValue not implemented', key);
+    return undefined;
+  },
+
+  setValue: <T = unknown,>(key: string, value: T): void => {
+    console.warn('B.setValue not implemented', key, value);
+  }
+} as const;export interface Song extends Track {score: number;}type AppState = 'login' | 'album-selection' | 'battle' | 'results';interface SongState {songs: Song[];battleQueue: [Song, Song][];currentBattle: [Song, Song] | null;completedBattles: number;totalBattles: number;isAuthenticated: boolean;appState: AppState;selectedAlbum: Album | null;login: () => void;logout: () => void;selectAlbum: (albumId: string) => void;initializeSession: (tracks: Track[]) => void;vote: (winnerId: string | 'like_both' | 'no_opinion') => void;startNew: () => void;
 }
-type AppState = 'login' | 'album-selection' | 'battle' | 'results';
-interface SongState {
-  songs: Song[];
-  battleQueue: [Song, Song][];
-  currentBattle: [Song, Song] | null;
-  completedBattles: number;
-  totalBattles: number;
-  isAuthenticated: boolean;
-  appState: AppState;
-  selectedAlbum: Album | null;
-  login: () => void;
-  logout: () => void;
-  selectAlbum: (albumId: string) => void;
-  initializeSession: (tracks: Track[]) => void;
-  vote: (winnerId: string | 'like_both' | 'no_opinion') => void;
-  startNew: () => void;
-}
-const K = 32; // Elo rating K-factor
+const K = 32;
 const getExpectedScore = (ratingA: number, ratingB: number) => {
   return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
 };
@@ -35,7 +35,7 @@ const updateRatings = (ratingA: number, ratingB: number, result: 'win' | 'loss' 
   } else if (result === 'loss') {
     scoreA = 0;
     scoreB = 1;
-  } else { // tie
+  } else {
     scoreA = 0.5;
     scoreB = 0.5;
   }
@@ -64,7 +64,7 @@ const initialState = {
   totalBattles: 0,
   isAuthenticated: false,
   appState: 'login' as AppState,
-  selectedAlbum: null,
+  selectedAlbum: null
 };
 export const useSongStore = create<SongState>()(
   persist(
@@ -74,19 +74,19 @@ export const useSongStore = create<SongState>()(
       logout: () => set(initialState),
       selectAlbum: (albumId: string) => {
         const tracks = getAlbumTracks(albumId);
-        const album = mockAlbums.find(a => a.id === albumId) || null;
+        const album = mockAlbums.find((a) => a.id === albumId) || null;
         get().initializeSession(tracks);
         set({ appState: 'battle', selectedAlbum: album });
       },
       initializeSession: (tracks: Track[]) => {
-        const songsWithScore = tracks.map(track => ({ ...track, score: 1000 }));
+        const songsWithScore = tracks.map((track) => ({ ...track, score: 1000 }));
         const pairs = generateBattlePairs(songsWithScore);
         set({
           songs: songsWithScore.sort((a, b) => b.score - a.score),
           battleQueue: pairs,
           totalBattles: pairs.length,
           completedBattles: 0,
-          currentBattle: pairs[0] || null,
+          currentBattle: pairs[0] || null
         });
       },
       vote: (winnerId) => {
@@ -103,7 +103,7 @@ export const useSongStore = create<SongState>()(
           } else {
             newRatings = updateRatings(songA.score, songB.score, 'loss');
           }
-          updatedSongs = songs.map(song => {
+          updatedSongs = songs.map((song) => {
             if (song.id === songA.id) return { ...song, score: newRatings.newRatingA };
             if (song.id === B.id) return { ...song, score: newRatings.newRatingB };
             return song;
@@ -116,7 +116,7 @@ export const useSongStore = create<SongState>()(
           battleQueue: newQueue,
           currentBattle: newQueue[0] || null,
           completedBattles: get().completedBattles + 1,
-          appState: isSessionComplete ? 'results' : 'battle',
+          appState: isSessionComplete ? 'results' : 'battle'
         });
       },
       startNew: () => {
@@ -127,12 +127,12 @@ export const useSongStore = create<SongState>()(
           currentBattle: null,
           completedBattles: 0,
           totalBattles: 0,
-          selectedAlbum: null,
+          selectedAlbum: null
         });
-      },
+      }
     }),
     {
-      name: 'tunetussle-song-storage',
+      name: 'tunetussle-song-storage'
     }
   )
 );
