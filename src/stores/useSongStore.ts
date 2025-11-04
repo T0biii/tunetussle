@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 export interface Song {
   id: string;
   title: string;
@@ -10,6 +11,7 @@ interface SongState {
   currentBattle: [Song, Song] | null;
   startBattle: () => void;
   vote: (winnerId: string | 'tie') => void;
+  resetScores: () => void;
 }
 const initialSongs: Song[] = [
   { id: '1', title: "Smells Like Teen Spirit", artist: "Nirvana", score: 1000 },
@@ -45,43 +47,54 @@ const updateRatings = (ratingA: number, ratingB: number, result: 'win' | 'loss' 
   const newRatingB = ratingB + K * (scoreB - expectedB);
   return { newRatingA: Math.round(newRatingA), newRatingB: Math.round(newRatingB) };
 };
-export const useSongStore = create<SongState>((set, get) => ({
-  songs: initialSongs.sort((a, b) => b.score - a.score),
-  currentBattle: null,
-  startBattle: () => {
-    const songs = get().songs;
-    if (songs.length < 2) {
-      set({ currentBattle: null });
-      return;
+export const useSongStore = create<SongState>()(
+  persist(
+    (set, get) => ({
+      songs: initialSongs.sort((a, b) => b.score - a.score),
+      currentBattle: null,
+      startBattle: () => {
+        const songs = get().songs;
+        if (songs.length < 2) {
+          set({ currentBattle: null });
+          return;
+        }
+        let index1 = Math.floor(Math.random() * songs.length);
+        let index2 = Math.floor(Math.random() * songs.length);
+        while (index1 === index2) {
+          index2 = Math.floor(Math.random() * songs.length);
+        }
+        set({ currentBattle: [songs[index1], songs[index2]] });
+      },
+      vote: (winnerId) => {
+        const { currentBattle, songs } = get();
+        if (!currentBattle) return;
+        const [songA, songB] = currentBattle;
+        let newRatings;
+        if (winnerId === 'tie') {
+          newRatings = updateRatings(songA.score, songB.score, 'tie');
+        } else if (winnerId === songA.id) {
+          newRatings = updateRatings(songA.score, songB.score, 'win');
+        } else { // winnerId is songB.id
+          newRatings = updateRatings(songA.score, songB.score, 'loss');
+        }
+        const updatedSongs = songs.map(song => {
+          if (song.id === songA.id) return { ...song, score: newRatings.newRatingA };
+          if (song.id === songB.id) return { ...song, score: newRatings.newRatingB };
+          return song;
+        }).sort((a, b) => b.score - a.score);
+        set({ songs: updatedSongs });
+        // Start a new battle after a short delay to allow for animations
+        setTimeout(() => {
+          get().startBattle();
+        }, 500);
+      },
+      resetScores: () => {
+        set({ songs: initialSongs.sort((a, b) => b.score - a.score) });
+        get().startBattle();
+      },
+    }),
+    {
+      name: 'tunetussle-song-storage', // name of the item in the storage (must be unique)
     }
-    let index1 = Math.floor(Math.random() * songs.length);
-    let index2 = Math.floor(Math.random() * songs.length);
-    while (index1 === index2) {
-      index2 = Math.floor(Math.random() * songs.length);
-    }
-    set({ currentBattle: [songs[index1], songs[index2]] });
-  },
-  vote: (winnerId) => {
-    const { currentBattle, songs } = get();
-    if (!currentBattle) return;
-    const [songA, songB] = currentBattle;
-    let newRatings;
-    if (winnerId === 'tie') {
-      newRatings = updateRatings(songA.score, songB.score, 'tie');
-    } else if (winnerId === songA.id) {
-      newRatings = updateRatings(songA.score, songB.score, 'win');
-    } else { // winnerId is songB.id
-      newRatings = updateRatings(songA.score, songB.score, 'loss');
-    }
-    const updatedSongs = songs.map(song => {
-      if (song.id === songA.id) return { ...song, score: newRatings.newRatingA };
-      if (song.id === songB.id) return { ...song, score: newRatings.newRatingB };
-      return song;
-    }).sort((a, b) => b.score - a.score);
-    set({ songs: updatedSongs });
-    // Start a new battle after a short delay to allow for animations
-    setTimeout(() => {
-      get().startBattle();
-    }, 500);
-  },
-}));
+  )
+);
