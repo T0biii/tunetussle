@@ -9,6 +9,44 @@ export interface Album {
   artist: string;
   coverUrl: string;
 }
+export const mockAlbums: Album[] = [
+  {
+    id: 'album-1',
+    title: 'Nevermind',
+    artist: 'Nirvana',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg',
+  },
+  {
+    id: 'album-2',
+    title: 'Thriller',
+    artist: 'Michael Jackson',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/5/55/Michael_Jackson_-_Thriller.png',
+  },
+  {
+    id: 'album-3',
+    title: 'A Night at the Opera',
+    artist: 'Queen',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/4d/Queen_A_Night_At_The_Opera.png',
+  },
+  {
+    id: 'album-4',
+    title: 'Abbey Road',
+    artist: 'The Beatles',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/42/Beatles_-_Abbey_Road.jpg',
+  },
+  {
+    id: 'album-5',
+    title: 'Hotel California',
+    artist: 'Eagles',
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/49/Hotelcalifornia.jpg',
+  },
+  {
+    id: 'album-6',
+    title: 'Appetite for Destruction',
+    artist: "Guns N' Roses",
+    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/6/60/GunsnRosesAppetiteforDestructionalbumcover.jpg',
+  },
+];
 const mockTracks: Record<string, Track[]> = {
   'album-1': [
     { id: '1-1', title: "Smells Like Teen Spirit", artist: "Nirvana" },
@@ -70,80 +108,7 @@ const mockTracks: Record<string, Track[]> = {
     { id: '6-7', title: "My Michelle", artist: "Guns N' Roses" },
     { id: '6-8', title: "Rocket Queen", artist: "Guns N' Roses" },
   ],
-  'album-7': [
-    { id: '7-1', title: "Speak to Me / Breathe", artist: "Pink Floyd" },
-    { id: '7-2', title: "On the Run", artist: "Pink Floyd" },
-    { id: '7-3', title: "Time", artist: "Pink Floyd" },
-    { id: '7-4', title: "The Great Gig in the Sky", artist: "Pink Floyd" },
-    { id: '7-5', title: "Money", artist: "Pink Floyd" },
-    { id: '7-6', title: "Us and Them", artist: "Pink Floyd" },
-    { id: '7-7', title: "Any Colour You Like", artist: "Pink Floyd" },
-    { id: '7-8', title: "Brain Damage / Eclipse", artist: "Pink Floyd" },
-  ],
-  'album-8': [
-    { id: '8-1', title: "Second Hand News", artist: "Fleetwood Mac" },
-    { id: '8-2', title: "Dreams", artist: "Fleetwood Mac" },
-    { id: '8-3', title: "Never Going Back Again", artist: "Fleetwood Mac" },
-    { id: '8-4', title: "Don't Stop", artist: "Fleetwood Mac" },
-    { id: '8-5', title: "Go Your Own Way", artist: "Fleetwood Mac" },
-    { id: '8-6', title: "Songbird", artist: "Fleetwood Mac" },
-    { id: '8-7', title: "The Chain", artist: "Fleetwood Mac" },
-    { id: '8-8', title: "You Make Loving Fun", artist: "Fleetwood Mac" },
-  ],
-  'album-9': [
-    { id: '9-1', title: "Black Dog", artist: "Led Zeppelin" },
-    { id: '9-2', title: "Rock and Roll", artist: "Led Zeppelin" },
-    { id: '9-3', title: "The Battle of Evermore", artist: "Led Zeppelin" },
-    { id: '9-4', title: "Stairway to Heaven", artist: "Led Zeppelin" },
-    { id: '9-5', title: "Misty Mountain Hop", artist: "Led Zeppelin" },
-    { id: '9-6', title: "Four Sticks", artist: "Led Zeppelin" },
-    { id: '9-7', title: "Going to California", artist: "Led Zeppelin" },
-    { id: '9-8', title: "When the Levee Breaks", artist: "Led Zeppelin" },
-  ],
-  'album-10': [
-    { id: '10-1', title: "London Calling", artist: "The Clash" },
-    { id: '10-2', title: "Brand New Cadillac", artist: "The Clash" },
-    { id: '10-3', title: "Jimmy Jazz", artist: "The Clash" },
-    { id: '10-4', title: "Hateful", artist: "The Clash" },
-    { id: '10-5', title: "Rudie Can't Fail", artist: "The Clash" },
-    { id: '10-6', title: "Spanish Bombs", artist: "The Clash" },
-    { id: '10-7', title: "The Guns of Brixton", artist: "The Clash" },
-    { id: '10-8', title: "Train in Vain", artist: "The Clash" },
-  ],
-  'album-11': [
-    { id: '11-1', title: "Is This Love", artist: "Bob Marley & The Wailers" },
-    { id: '11-2', title: "No Woman, No Cry", artist: "Bob Marley & The Wailers" },
-    { id: '11-3', title: "Could You Be Loved", artist: "Bob Marley & The Wailers" },
-    { id: '11-4', title: "Three Little Birds", artist: "Bob Marley & The Wailers" },
-    { id: '11-5', title: "Buffalo Soldier", artist: "Bob Marley & The Wailers" },
-    { id: '11-6', title: "Get Up, Stand Up", artist: "Bob Marley & The Wailers" },
-    { id: '11-7', title: "Stir It Up", artist: "Bob Marley & The Wailers" },
-    { id: '11-8', title: "One Love / People Get Ready", artist: "Bob Marley & The Wailers" },
-  ],
-  'album-12': [
-    { id: '12-1', title: "Give Life Back to Music", artist: "Daft Punk" },
-    { id: '12-2', title: "The Game of Love", artist: "Daft Punk" },
-    { id: '12-3', title: "Giorgio by Moroder", artist: "Daft Punk" },
-    { id: '12-4', title: "Instant Crush", artist: "Daft Punk" },
-    { id: '12-5', title: "Lose Yourself to Dance", artist: "Daft Punk" },
-    { id: '12-6', title: "Get Lucky", artist: "Daft Punk" },
-    { id: '12-7', title: "Doin' it Right", artist: "Daft Punk" },
-    { id: '12-8', title: "Contact", artist: "Daft Punk" },
-  ],
-  // This is a fallback for albums searched via API, since we don't fetch real tracks yet.
-  // We'll use a generic set of tracks for any selected album.
-  'default': [
-    { id: 'd-1', title: "Track 1", artist: "Various Artists" },
-    { id: 'd-2', title: "Track 2", artist: "Various Artists" },
-    { id: 'd-3', title: "Track 3", artist: "Various Artists" },
-    { id: 'd-4', title: "Track 4", artist: "Various Artists" },
-    { id: 'd-5', title: "Track 5", artist: "Various Artists" },
-    { id: 'd-6', title: "Track 6", artist: "Various Artists" },
-    { id: 'd-7', title: "Track 7", artist: "Various Artists" },
-    { id: 'd-8', title: "Track 8", artist: "Various Artists" },
-  ]
 };
 export const getAlbumTracks = (albumId: string): Track[] => {
-  // Use specific mock tracks if available, otherwise use a default set for API-fetched albums.
-  return mockTracks[albumId] || mockTracks['default'];
+  return mockTracks[albumId] || [];
 };
