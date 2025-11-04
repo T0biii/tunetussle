@@ -9,80 +9,6 @@ export interface Album {
   artist: string;
   coverUrl: string;
 }
-export const mockAlbums: Album[] = [
-  {
-    id: 'album-1',
-    title: 'Nevermind',
-    artist: 'Nirvana',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg',
-  },
-  {
-    id: 'album-2',
-    title: 'Thriller',
-    artist: 'Michael Jackson',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/5/55/Michael_Jackson_-_Thriller.png',
-  },
-  {
-    id: 'album-3',
-    title: 'A Night at the Opera',
-    artist: 'Queen',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/4d/Queen_A_Night_At_The_Opera.png',
-  },
-  {
-    id: 'album-4',
-    title: 'Abbey Road',
-    artist: 'The Beatles',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/42/Beatles_-_Abbey_Road.jpg',
-  },
-  {
-    id: 'album-5',
-    title: 'Hotel California',
-    artist: 'Eagles',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/49/Hotelcalifornia.jpg',
-  },
-  {
-    id: 'album-6',
-    title: 'Appetite for Destruction',
-    artist: "Guns N' Roses",
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/6/60/GunsnRosesAppetiteforDestructionalbumcover.jpg',
-  },
-  {
-    id: 'album-7',
-    title: 'The Dark Side of the Moon',
-    artist: 'Pink Floyd',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/3/3b/Dark_Side_of_the_Moon.png',
-  },
-  {
-    id: 'album-8',
-    title: 'Rumours',
-    artist: 'Fleetwood Mac',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/f/fb/FMacRumours.png',
-  },
-  {
-    id: 'album-9',
-    title: 'Led Zeppelin IV',
-    artist: 'Led Zeppelin',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/2/26/Led_Zeppelin_-_Led_Zeppelin_IV.jpg',
-  },
-  {
-    id: 'album-10',
-    title: 'London Calling',
-    artist: 'The Clash',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/0/00/TheClashLondonCallingalbumcover.jpg',
-  },
-  {
-    id: 'album-11',
-    title: 'Legend',
-    artist: 'Bob Marley & The Wailers',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/46/BobMarley-Legend.jpg',
-  },
-  {
-    id: 'album-12',
-    title: 'Random Access Memories',
-    artist: 'Daft Punk',
-    coverUrl: 'https://upload.wikimedia.org/wikipedia/en/a/a7/Daft_Punk_-_Random_Access_Memories.jpg',
-  },
-];
 const mockTracks: Record<string, Track[]> = {
   'album-1': [
     { id: '1-1', title: "Smells Like Teen Spirit", artist: "Nirvana" },
@@ -204,7 +130,20 @@ const mockTracks: Record<string, Track[]> = {
     { id: '12-7', title: "Doin' it Right", artist: "Daft Punk" },
     { id: '12-8', title: "Contact", artist: "Daft Punk" },
   ],
+  // This is a fallback for albums searched via API, since we don't fetch real tracks yet.
+  // We'll use a generic set of tracks for any selected album.
+  'default': [
+    { id: 'd-1', title: "Track 1", artist: "Various Artists" },
+    { id: 'd-2', title: "Track 2", artist: "Various Artists" },
+    { id: 'd-3', title: "Track 3", artist: "Various Artists" },
+    { id: 'd-4', title: "Track 4", artist: "Various Artists" },
+    { id: 'd-5', title: "Track 5", artist: "Various Artists" },
+    { id: 'd-6', title: "Track 6", artist: "Various Artists" },
+    { id: 'd-7', title: "Track 7", artist: "Various Artists" },
+    { id: 'd-8', title: "Track 8", artist: "Various Artists" },
+  ]
 };
 export const getAlbumTracks = (albumId: string): Track[] => {
-  return mockTracks[albumId] || [];
+  // Use specific mock tracks if available, otherwise use a default set for API-fetched albums.
+  return mockTracks[albumId] || mockTracks['default'];
 };

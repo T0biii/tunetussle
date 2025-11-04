@@ -1,35 +1,49 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSongStore } from '@/stores/useSongStore';
 import { SongBattle } from '@/components/SongBattle';
 import { RankingList } from '@/components/RankingList';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { LogOut, RefreshCw } from 'lucide-react';
+import { LogOut, RefreshCw, Loader } from 'lucide-react';
 import { SpotifyLogin } from '@/components/SpotifyLogin';
 import { AlbumSelection } from '@/components/AlbumSelection';
 import { Toaster } from '@/components/ui/sonner';
+function FullPageLoader() {
+  return (
+    <div className="fixed inset-0 bg-deep-purple flex flex-col items-center justify-center z-50">
+      <Loader className="w-16 h-16 text-neon-pink animate-spin" />
+      <p className="text-neon-cyan/80 mt-4 text-lg">Verifying Session...</p>
+    </div>
+  );
+}
 export function HomePage() {
   const appState = useSongStore((state) => state.appState);
-  const isAuthenticated = useSongStore((state) => state.isAuthenticated);
+  const user = useSongStore((state) => state.user);
   const logout = useSongStore((state) => state.logout);
   const startNew = useSongStore((state) => state.startNew);
   const completedBattles = useSongStore((state) => state.completedBattles);
   const totalBattles = useSongStore((state) => state.totalBattles);
   const selectedAlbum = useSongStore((state) => state.selectedAlbum);
+  const isAuthLoading = useSongStore((state) => state.isAuthLoading);
+  const checkAuthStatus = useSongStore((state) => state.checkAuthStatus);
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
   const progressValue = totalBattles > 0 ? (completedBattles / totalBattles) * 100 : 0;
   const renderHeaderContent = () => {
+    if (!user) {
+      return { title: "TuneTussle", subtitle: "The Ultimate Song Sorter" };
+    }
     switch (appState) {
-      case 'login':
-        return { title: "TuneTussle", subtitle: "The Ultimate Song Sorter" };
       case 'album-selection':
-        return { title: "Select an Album", subtitle: "Choose your musical battlefield" };
+        return { title: "Select an Album", subtitle: `Welcome, ${user.display_name}!` };
       case 'battle':
         return { title: "TuneTussle", subtitle: "Which track reigns supreme?" };
       case 'results':
-        return { 
-          title: "Final Rankings", 
-          subtitle: selectedAlbum ? `Results for ${selectedAlbum.title}` : "The people have spoken!" 
+        return {
+          title: "Final Rankings",
+          subtitle: selectedAlbum ? `Results for ${selectedAlbum.title}` : "The people have spoken!"
         };
       default:
         return { title: "TuneTussle", subtitle: "" };
@@ -37,9 +51,10 @@ export function HomePage() {
   };
   const { title, subtitle } = renderHeaderContent();
   const renderContent = () => {
+    if (!user) {
+      return <SpotifyLogin />;
+    }
     switch (appState) {
-      case 'login':
-        return <SpotifyLogin />;
       case 'album-selection':
         return <AlbumSelection />;
       case 'battle':
@@ -60,9 +75,12 @@ export function HomePage() {
         return null;
     }
   };
+  if (isAuthLoading) {
+    return <FullPageLoader />;
+  }
   return (
     <div className="min-h-screen bg-deep-purple flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-pixel relative overflow-y-auto">
-      <Toaster 
+      <Toaster
         theme="dark"
         toastOptions={{
           classNames: {
@@ -97,7 +115,7 @@ export function HomePage() {
                 <p className="text-neon-cyan/80 mt-2 text-lg md:text-xl">{subtitle}</p>
               </motion.div>
             </AnimatePresence>
-            {isAuthenticated && (
+            {user && (
               <div className="absolute top-0 right-0 flex gap-2">
                 {appState === 'results' && (
                   <Button

@@ -1,23 +1,41 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useSongStore } from '@/stores/useSongStore';
-import { mockAlbums } from '@/lib/mockSpotifyData';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, Loader } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+function AlbumSkeleton() {
+  return (
+    <div className="flex flex-col space-y-3">
+      <Skeleton className="h-[250px] w-full rounded-xl" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
+}
 export function AlbumSelection() {
   const selectAlbum = useSongStore((state) => state.selectAlbum);
+  const searchAlbums = useSongStore((state) => state.searchAlbums);
+  const albums = useSongStore((state) => state.albums);
+  const isSearching = useSongStore((state) => state.isSearching);
   const [searchQuery, setSearchQuery] = useState('');
-  const filteredAlbums = useMemo(() => {
-    if (!searchQuery) {
-      return mockAlbums;
-    }
-    return mockAlbums.filter(album =>
-      album.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      album.artist.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+    return () => {
+      clearTimeout(handler);
+    };
   }, [searchQuery]);
+  useEffect(() => {
+    searchAlbums(debouncedQuery);
+  }, [debouncedQuery, searchAlbums]);
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -46,14 +64,19 @@ export function AlbumSelection() {
           className="w-full bg-deep-purple/50 border-2 border-neon-cyan/30 rounded-lg pl-12 pr-4 py-6 text-lg text-neon-cyan placeholder:text-neon-cyan/50 focus:ring-neon-pink focus:border-neon-pink transition-colors"
         />
       </div>
-      {filteredAlbums.length > 0 ? (
+      {isSearching && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+          {[...Array(6)].map((_, i) => <AlbumSkeleton key={i} />)}
+        </div>
+      )}
+      {!isSearching && albums.length > 0 && (
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8"
         >
-          {filteredAlbums.map((album) => (
+          {albums.map((album) => (
             <motion.div key={album.id} variants={itemVariants}>
               <Card className="bg-deep-purple/50 border-2 border-neon-pink/30 rounded-xl shadow-neon-pink/20 backdrop-blur-sm text-center overflow-hidden h-full flex flex-col group hover:border-neon-pink transition-all duration-300">
                 <CardHeader className="p-0">
@@ -75,7 +98,8 @@ export function AlbumSelection() {
             </motion.div>
           ))}
         </motion.div>
-      ) : (
+      )}
+      {!isSearching && albums.length === 0 && debouncedQuery && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

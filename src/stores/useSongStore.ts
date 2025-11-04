@@ -1,21 +1,29 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { getAlbumTracks, Track, Album, mockAlbums } from '@/lib/mockSpotifyData';
+import { getAlbumTracks, Track, Album } from '@/lib/mockSpotifyData';
 export interface Song extends Track {
   score: number;
 }
 type AppState = 'login' | 'album-selection' | 'battle' | 'results';
+interface SpotifyUser {
+  display_name: string;
+  id: string;
+}
 interface SongState {
   songs: Song[];
   battleQueue: [Song, Song][];
   currentBattle: [Song, Song] | null;
   completedBattles: number;
   totalBattles: number;
-  isAuthenticated: boolean;
+  user: SpotifyUser | null;
+  isAuthLoading: boolean;
+  isSearching: boolean;
+  albums: Album[];
   appState: AppState;
   selectedAlbum: Album | null;
-  login: () => void;
-  logout: () => void;
+  checkAuthStatus: () => Promise<void>;
+  logout: () => Promise<void>;
+  searchAlbums: (query: string) => Promise<void>;
   selectAlbum: (albumId: string) => void;
   initializeSession: (tracks: Track[]) => void;
   vote: (winnerId: string | 'like_both' | 'no_opinion') => void;
@@ -63,7 +71,10 @@ const initialState = {
   currentBattle: null,
   completedBattles: 0,
   totalBattles: 0,
-  isAuthenticated: false,
+  user: null,
+  isAuthLoading: true,
+  isSearching: false,
+  albums: [],
   appState: 'login' as AppState,
   selectedAlbum: null,
 };
@@ -71,11 +82,49 @@ export const useSongStore = create<SongState>()(
   persist(
     (set, get) => ({
       ...initialState,
-      login: () => set({ isAuthenticated: true, appState: 'album-selection' }),
-      logout: () => set(initialState),
+      checkAuthStatus: async () => {
+        try {
+          const response = await fetch('/api/spotify/me');
+          const { user } = await response.json();
+          set({ user, appState: user ? 'album-selection' : 'login' });
+        } catch (error) {
+          console.error("Auth check failed:", error);
+          set({ user: null, appState: 'login' });
+        } finally {
+          set({ isAuthLoading: false });
+        }
+      },
+      logout: async () => {
+        await fetch('/api/spotify/logout', { method: 'POST' });
+        set(initialState);
+        set({ isAuthLoading: false, appState: 'login' });
+      },
+      searchAlbums: async (query: string) => {
+        if (!query) {
+          set({ albums: [] });
+          return;
+        }
+        set({ isSearching: true });
+        try {
+          const response = await fetch(`/api/spotify/search?q=${encodeURIComponent(query)}`);
+          const data = await response.json();
+          const formattedAlbums: Album[] = data.albums.items.map((item: any) => ({
+            id: item.id,
+            title: item.name,
+            artist: item.artists.map((a: any) => a.name).join(', '),
+            coverUrl: item.images[0]?.url || '',
+          }));
+          set({ albums: formattedAlbums });
+        } catch (error) {
+          console.error("Album search failed:", error);
+          set({ albums: [] });
+        } finally {
+          set({ isSearching: false });
+        }
+      },
       selectAlbum: (albumId: string) => {
-        const tracks = getAlbumTracks(albumId);
-        const album = mockAlbums.find((a) => a.id === albumId) || null;
+        const tracks = getAlbumTracks(albumId); // Still using mock tracks for now
+        const album = get().albums.find((a) => a.id === albumId) || null;
         get().initializeSession(tracks);
         set({ appState: 'battle', selectedAlbum: album });
       },
@@ -129,11 +178,13 @@ export const useSongStore = create<SongState>()(
           completedBattles: 0,
           totalBattles: 0,
           selectedAlbum: null,
+          albums: [],
         });
       },
     }),
     {
       name: 'tunetussle-song-storage',
+      partialize: (state) => ({ user: state.user }), // Only persist user data
     }
   )
 );
