@@ -2,7 +2,7 @@
 
 A retro-themed, drag-and-drop song ranking application to sort your favorite tunes in style.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/T0biii/tunetussle)
 
 ## About The Project
 
@@ -81,7 +81,7 @@ This project is configured for easy deployment to Cloudflare Pages/Workers.
 
 ### Deploy with a single click
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/T0biii/tunetussle)
 
 ### Manual Deployment via Wrangler
 
