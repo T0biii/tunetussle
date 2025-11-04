@@ -8,7 +8,7 @@ export function SongBattle() {
   const currentBattle = useSongStore((state) => state.currentBattle);
   const vote = useSongStore((state) => state.vote);
   const [isVoting, setIsVoting] = useState<string | null>(null);
-  const handleVote = (winnerId: string | 'tie') => {
+  const handleVote = (winnerId: string | 'like_both' | 'no_opinion') => {
     if (isVoting) return;
     setIsVoting(winnerId);
     setTimeout(() => {
@@ -75,14 +75,22 @@ export function SongBattle() {
           </div>
         </motion.div>
       </AnimatePresence>
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex justify-center items-center gap-4">
         <Button
-          onClick={() => handleVote('tie')}
+          onClick={() => handleVote('like_both')}
           disabled={!!isVoting}
           variant="ghost"
           className="text-neon-cyan/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          It's a Tie
+          I Like Both
+        </Button>
+        <Button
+          onClick={() => handleVote('no_opinion')}
+          disabled={!!isVoting}
+          variant="ghost"
+          className="text-neon-cyan/50 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          No Opinion
         </Button>
       </div>
     </div>

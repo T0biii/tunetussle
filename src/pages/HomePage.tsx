@@ -4,33 +4,31 @@ import { useSongStore } from '@/stores/useSongStore';
 import { SongBattle } from '@/components/SongBattle';
 import { RankingList } from '@/components/RankingList';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { RefreshCw } from 'lucide-react';
 export function HomePage() {
-  const startBattle = useSongStore((state) => state.startBattle);
+  const initializeSession = useSongStore((state) => state.initializeSession);
   const resetScores = useSongStore((state) => state.resetScores);
+  const isComplete = useSongStore((state) => state.isComplete);
+  const completedBattles = useSongStore((state) => state.completedBattles);
+  const totalBattles = useSongStore((state) => state.totalBattles);
+  const battleQueue = useSongStore((state) => state.battleQueue);
   useEffect(() => {
-    // This check prevents starting a new battle on every load if there's already persisted data.
-    // The store now handles initialization. We can call startBattle if there's no current battle.
-    const unsub = useSongStore.subscribe(state => {
-      if (!state.currentBattle) {
-        startBattle();
-      }
-    });
-    // Initial check
-    if (!useSongStore.getState().currentBattle) {
-        startBattle();
+    // Initialize session only if the queue is empty and it's not complete.
+    // This handles initial load and rehydration from persistence.
+    if (battleQueue.length === 0 && !isComplete) {
+      initializeSession();
     }
-    return () => unsub();
-  }, [startBattle]);
+  }, [initializeSession, battleQueue.length, isComplete]);
+  const progressValue = totalBattles > 0 ? (completedBattles / totalBattles) * 100 : 0;
   return (
     <div className="min-h-screen bg-deep-purple flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-pixel relative overflow-y-auto">
       <div className="absolute inset-0 bg-grid-neon-cyan/10 [mask-image:linear-gradient(to_bottom,white_5%,transparent_80%)]"></div>
-      <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 md:gap-12 items-start">
+      <div className="w-full max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, type: 'spring' }}
-          className="w-full lg:w-1/2 flex-shrink-0"
         >
           <header className="text-center mb-8 relative">
             <h1
@@ -39,7 +37,9 @@ export function HomePage() {
             >
               TuneTussle
             </h1>
-            <p className="text-neon-cyan/80 mt-2 text-lg md:text-xl">Which track reigns supreme?</p>
+            <p className="text-neon-cyan/80 mt-2 text-lg md:text-xl">
+              {isComplete ? "The final rankings are in!" : "Which track reigns supreme?"}
+            </p>
             <Button
               onClick={resetScores}
               variant="ghost"
@@ -51,15 +51,24 @@ export function HomePage() {
             </Button>
           </header>
           <main>
-            <SongBattle />
+            {isComplete ? (
+              <RankingList />
+            ) : (
+              <div className="space-y-8">
+                <SongBattle />
+                <div className="space-y-2">
+                  <Progress value={progressValue} className="w-full border border-neon-cyan/20" />
+                  <p className="text-center text-sm text-neon-cyan/60">
+                    {completedBattles} / {totalBattles} Battles
+                  </p>
+                </div>
+              </div>
+            )}
           </main>
         </motion.div>
-        <div className="w-full lg:w-1/2">
-          <RankingList />
-        </div>
       </div>
       <footer className="w-full text-center text-neon-cyan/40 text-sm mt-12 pb-4">
-        <p>Built with ��️ at Cloudflare</p>
+        <p>Built with ❤️ at Cloudflare</p>
       </footer>
     </div>
   );

@@ -8,9 +8,13 @@ export interface Song {
 }
 interface SongState {
   songs: Song[];
+  battleQueue: [Song, Song][];
   currentBattle: [Song, Song] | null;
-  startBattle: () => void;
-  vote: (winnerId: string | 'tie') => void;
+  completedBattles: number;
+  totalBattles: number;
+  isComplete: boolean;
+  initializeSession: () => void;
+  vote: (winnerId: string | 'like_both' | 'no_opinion') => void;
   resetScores: () => void;
 }
 const initialSongs: Song[] = [
@@ -47,54 +51,77 @@ const updateRatings = (ratingA: number, ratingB: number, result: 'win' | 'loss' 
   const newRatingB = ratingB + K * (scoreB - expectedB);
   return { newRatingA: Math.round(newRatingA), newRatingB: Math.round(newRatingB) };
 };
+const generateBattlePairs = (songs: Song[]): [Song, Song][] => {
+  const pairs: [Song, Song][] = [];
+  for (let i = 0; i < songs.length; i++) {
+    for (let j = i + 1; j < songs.length; j++) {
+      pairs.push([songs[i], songs[j]]);
+    }
+  }
+  // Shuffle the pairs for randomness
+  for (let i = pairs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+  }
+  return pairs;
+};
 export const useSongStore = create<SongState>()(
   persist(
     (set, get) => ({
       songs: initialSongs.sort((a, b) => b.score - a.score),
+      battleQueue: [],
       currentBattle: null,
-      startBattle: () => {
+      completedBattles: 0,
+      totalBattles: 0,
+      isComplete: false,
+      initializeSession: () => {
         const songs = get().songs;
-        if (songs.length < 2) {
-          set({ currentBattle: null });
-          return;
-        }
-        let index1 = Math.floor(Math.random() * songs.length);
-        let index2 = Math.floor(Math.random() * songs.length);
-        while (index1 === index2) {
-          index2 = Math.floor(Math.random() * songs.length);
-        }
-        set({ currentBattle: [songs[index1], songs[index2]] });
+        const pairs = generateBattlePairs(songs);
+        set({
+          battleQueue: pairs,
+          totalBattles: pairs.length,
+          completedBattles: 0,
+          isComplete: false,
+          currentBattle: pairs[0] || null,
+        });
       },
       vote: (winnerId) => {
-        const { currentBattle, songs } = get();
+        const { currentBattle, songs, battleQueue } = get();
         if (!currentBattle) return;
-        const [songA, songB] = currentBattle;
-        let newRatings;
-        if (winnerId === 'tie') {
-          newRatings = updateRatings(songA.score, songB.score, 'tie');
-        } else if (winnerId === songA.id) {
-          newRatings = updateRatings(songA.score, songB.score, 'win');
-        } else { // winnerId is songB.id
-          newRatings = updateRatings(songA.score, songB.score, 'loss');
+        let updatedSongs = songs;
+        if (winnerId !== 'no_opinion') {
+          const [songA, songB] = currentBattle;
+          let newRatings;
+          if (winnerId === 'like_both') {
+            newRatings = updateRatings(songA.score, songB.score, 'tie');
+          } else if (winnerId === songA.id) {
+            newRatings = updateRatings(songA.score, songB.score, 'win');
+          } else { // winnerId is songB.id
+            newRatings = updateRatings(songA.score, songB.score, 'loss');
+          }
+          updatedSongs = songs.map(song => {
+            if (song.id === songA.id) return { ...song, score: newRatings.newRatingA };
+            if (song.id === songB.id) return { ...song, score: newRatings.newRatingB };
+            return song;
+          }).sort((a, b) => b.score - a.score);
         }
-        const updatedSongs = songs.map(song => {
-          if (song.id === songA.id) return { ...song, score: newRatings.newRatingA };
-          if (song.id === songB.id) return { ...song, score: newRatings.newRatingB };
-          return song;
-        }).sort((a, b) => b.score - a.score);
-        set({ songs: updatedSongs });
-        // Start a new battle after a short delay to allow for animations
-        setTimeout(() => {
-          get().startBattle();
-        }, 500);
+        const newQueue = battleQueue.slice(1);
+        const isSessionComplete = newQueue.length === 0;
+        set({
+          songs: updatedSongs,
+          battleQueue: newQueue,
+          currentBattle: newQueue[0] || null,
+          completedBattles: get().completedBattles + 1,
+          isComplete: isSessionComplete,
+        });
       },
       resetScores: () => {
         set({ songs: initialSongs.sort((a, b) => b.score - a.score) });
-        get().startBattle();
+        get().initializeSession();
       },
     }),
     {
-      name: 'tunetussle-song-storage', // name of the item in the storage (must be unique)
+      name: 'tunetussle-song-storage',
     }
   )
 );
