@@ -1,27 +1,27 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getAlbumTracks, Track, Album, mockAlbums } from '@/lib/mockSpotifyData';
-
-const B = {
-
-  _stub: true,
-
-
-  init: (...args: unknown[]): void => {
-    console.warn('B.init not implemented', args);
-  },
-
-  getValue: <T = unknown,>(key: string): T | undefined => {
-    console.warn('B.getValue not implemented', key);
-    return undefined;
-  },
-
-  setValue: <T = unknown,>(key: string, value: T): void => {
-    console.warn('B.setValue not implemented', key, value);
-  }
-} as const;export interface Song extends Track {score: number;}type AppState = 'login' | 'album-selection' | 'battle' | 'results';interface SongState {songs: Song[];battleQueue: [Song, Song][];currentBattle: [Song, Song] | null;completedBattles: number;totalBattles: number;isAuthenticated: boolean;appState: AppState;selectedAlbum: Album | null;login: () => void;logout: () => void;selectAlbum: (albumId: string) => void;initializeSession: (tracks: Track[]) => void;vote: (winnerId: string | 'like_both' | 'no_opinion') => void;startNew: () => void;
+export interface Song extends Track {
+  score: number;
 }
-const K = 32;
+type AppState = 'login' | 'album-selection' | 'battle' | 'results';
+interface SongState {
+  songs: Song[];
+  battleQueue: [Song, Song][];
+  currentBattle: [Song, Song] | null;
+  completedBattles: number;
+  totalBattles: number;
+  isAuthenticated: boolean;
+  appState: AppState;
+  selectedAlbum: Album | null;
+  login: () => void;
+  logout: () => void;
+  selectAlbum: (albumId: string) => void;
+  initializeSession: (tracks: Track[]) => void;
+  vote: (winnerId: string | 'like_both' | 'no_opinion') => void;
+  startNew: () => void;
+}
+const K = 32; // Elo rating K-factor
 const getExpectedScore = (ratingA: number, ratingB: number) => {
   return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
 };
@@ -35,7 +35,7 @@ const updateRatings = (ratingA: number, ratingB: number, result: 'win' | 'loss' 
   } else if (result === 'loss') {
     scoreA = 0;
     scoreB = 1;
-  } else {
+  } else { // tie
     scoreA = 0.5;
     scoreB = 0.5;
   }
@@ -50,6 +50,7 @@ const generateBattlePairs = (songs: Song[]): [Song, Song][] => {
       pairs.push([songs[i], songs[j]]);
     }
   }
+  // Fisher-Yates shuffle
   for (let i = pairs.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
@@ -64,7 +65,7 @@ const initialState = {
   totalBattles: 0,
   isAuthenticated: false,
   appState: 'login' as AppState,
-  selectedAlbum: null
+  selectedAlbum: null,
 };
 export const useSongStore = create<SongState>()(
   persist(
@@ -86,7 +87,7 @@ export const useSongStore = create<SongState>()(
           battleQueue: pairs,
           totalBattles: pairs.length,
           completedBattles: 0,
-          currentBattle: pairs[0] || null
+          currentBattle: pairs[0] || null,
         });
       },
       vote: (winnerId) => {
@@ -105,7 +106,7 @@ export const useSongStore = create<SongState>()(
           }
           updatedSongs = songs.map((song) => {
             if (song.id === songA.id) return { ...song, score: newRatings.newRatingA };
-            if (song.id === B.id) return { ...song, score: newRatings.newRatingB };
+            if (song.id === songB.id) return { ...song, score: newRatings.newRatingB };
             return song;
           }).sort((a, b) => b.score - a.score);
         }
@@ -116,7 +117,7 @@ export const useSongStore = create<SongState>()(
           battleQueue: newQueue,
           currentBattle: newQueue[0] || null,
           completedBattles: get().completedBattles + 1,
-          appState: isSessionComplete ? 'results' : 'battle'
+          appState: isSessionComplete ? 'results' : 'battle',
         });
       },
       startNew: () => {
@@ -127,12 +128,12 @@ export const useSongStore = create<SongState>()(
           currentBattle: null,
           completedBattles: 0,
           totalBattles: 0,
-          selectedAlbum: null
+          selectedAlbum: null,
         });
-      }
+      },
     }),
     {
-      name: 'tunetussle-song-storage'
+      name: 'tunetussle-song-storage',
     }
   )
 );
